@@ -1,105 +1,159 @@
-<!DOCTYPE html><html lang="vi">
+<!DOCTYPE html>
+<html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <title>Góc Tình Yêu 💖</title>
+  <title>Love Diary 🐾</title>
   <style>
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #ffe6f0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
+      font-family: 'Comic Sans MS', cursive;
+      background: url('https://i.imgur.com/YGxuBlJ.jpg') no-repeat center center fixed;
+      background-size: cover;
       margin: 0;
+      padding: 0;
+      color: #333;
     }
-    .login-box, .editor-box {
-      background: white;
-      padding: 20px;
-      border-radius: 16px;
-      box-shadow: 0 0 15px rgba(0,0,0,0.1);
-      width: 350px;
-      display: none;
+    .container {
+      max-width: 500px;
+      margin: 80px auto;
+      background: rgba(255, 255, 255, 0.9);
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 0 25px #ffaad4;
     }
-    .login-box.active, .editor-box.active {
-      display: block;
-    }
-    h2 {
-      color: #d63384;
+    h1 {
       text-align: center;
+      color: #ff69b4;
     }
-    input[type="text"], input[type="password"], textarea {
+    input, textarea, button {
       width: 100%;
-      padding: 10px;
-      margin-top: 10px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      font-size: 14px;
+      padding: 12px;
+      margin: 10px 0;
+      border: 2px solid #ffc0cb;
+      border-radius: 10px;
+      font-size: 16px;
     }
     button {
-      background: #ff66a3;
+      background-color: #ff69b4;
       color: white;
-      padding: 10px 20px;
-      margin-top: 15px;
-      border: none;
-      border-radius: 8px;
+      font-weight: bold;
       cursor: pointer;
-      width: 100%;
     }
-    .emoji-box span {
+    .hidden {
+      display: none;
+    }
+    .emoji {
       cursor: pointer;
-      font-size: 18px;
-      margin: 5px;
+      font-size: 24px;
+      margin: 3px;
+    }
+    .note {
+      background: #ffe6f0;
+      padding: 12px;
+      border-radius: 12px;
+      margin-top: 10px;
+      white-space: pre-wrap;
+    }
+    .timeline {
+      margin-top: 20px;
+    }
+    .quote {
+      text-align: center;
+      font-style: italic;
+      color: #d63384;
+      margin-top: 20px;
     }
   </style>
 </head>
 <body>
-  <div class="login-box active" id="loginBox">
-    <h2>Đăng nhập 💌</h2>
-    <input type="text" id="username" placeholder="Tên người dùng">
-    <input type="password" id="password" placeholder="Mật khẩu">
-    <button onclick="login()">Vào góc tình yêu</button>
-  </div>  <div class="editor-box" id="editorBox">
-    <h2>Góc viết yêu thương ✨</h2>
-    <textarea id="textArea" rows="10" placeholder="Viết điều bạn muốn..."></textarea>
-    <div class="emoji-box">
-      <span onclick="addEmoji('🥰')">🥰</span>
-      <span onclick="addEmoji('😍')">😍</span>
-      <span onclick="addEmoji('😭')">😭</span>
-      <span onclick="addEmoji('💕')">💕</span>
-      <span onclick="addEmoji('🌹')">🌹</span>
+  <div class="container" id="auth">
+    <h1>💕 Nhật Ký Tình Yêu 💕</h1>
+    <input type="text" id="username" placeholder="Tên người yêu 💖">
+    <input type="password" id="password" placeholder="Mật khẩu bí mật 🔒">
+    <button onclick="register()">Đăng ký</button>
+    <button onclick="login()">Đăng nhập</button>
+  </div>
+
+  <div class="container hidden" id="diary">
+    <h1>📝 Viết Nhật Ký</h1>
+    <div>
+      <div>
+        <span class="emoji" onclick="addEmoji('❤️')">❤️</span>
+        <span class="emoji" onclick="addEmoji('🐱')">🐱</span>
+        <span class="emoji" onclick="addEmoji('🌸')">🌸</span>
+        <span class="emoji" onclick="addEmoji('💋')">💋</span>
+        <span class="emoji" onclick="addEmoji('💌')">💌</span>
+      </div>
+      <textarea id="entry" rows="5" placeholder="Ghi điều gì đó ngọt ngào..."></textarea>
+      <button onclick="saveEntry()">Lưu nhật ký</button>
     </div>
-    <button onclick="saveText()">Lưu lại</button>
-  </div>  <script>
-    const loginBox = document.getElementById('loginBox');
-    const editorBox = document.getElementById('editorBox');
+    <div class="timeline" id="entries"></div>
+    <div class="quote">"Yêu là khi tim bạn cười mỗi lần nghĩ đến ai đó." 🐾</div>
+    <button onclick="logout()">Đăng xuất</button>
+  </div>
+
+  <script>
+    // Lưu trữ đơn giản bằng localStorage
+    const users = JSON.parse(localStorage.getItem('users') || '{}');
+    const entries = JSON.parse(localStorage.getItem('entries') || '{}');
+    let currentUser = null;
+
+    function register() {
+      const user = document.getElementById('username').value.trim();
+      const pass = document.getElementById('password').value;
+      if (!user || !pass) return alert('Điền đầy đủ thông tin nhé!');
+      if (users[user]) return alert('Tên này đã có rồi 🥺');
+      users[user] = pass;
+      localStorage.setItem('users', JSON.stringify(users));
+      alert('Đăng ký thành công 💕');
+    }
 
     function login() {
-      const user = document.getElementById('username').value;
+      const user = document.getElementById('username').value.trim();
       const pass = document.getElementById('password').value;
-
-      if (user && pass) {
-        loginBox.classList.remove('active');
-        editorBox.classList.add('active');
+      if (users[user] === pass) {
+        currentUser = user;
+        showDiary();
       } else {
-        alert("Vui lòng nhập đầy đủ tên và mật khẩu.");
+        alert('Sai tên hoặc mật khẩu 😿');
       }
     }
 
+    function logout() {
+      currentUser = null;
+      document.getElementById('diary').classList.add('hidden');
+      document.getElementById('auth').classList.remove('hidden');
+    }
+
+    function showDiary() {
+      document.getElementById('auth').classList.add('hidden');
+      document.getElementById('diary').classList.remove('hidden');
+      loadEntries();
+    }
+
     function addEmoji(emoji) {
-      const textArea = document.getElementById('textArea');
-      textArea.value += emoji;
+      document.getElementById('entry').value += emoji;
     }
 
-    function saveText() {
-      const content = document.getElementById('textArea').value;
-      localStorage.setItem('loveNote', content);
-      alert("Đã lưu lại trong tim 💗 (localStorage)");
+    function saveEntry() {
+      const text = document.getElementById('entry').value.trim();
+      if (!text) return;
+      if (!entries[currentUser]) entries[currentUser] = [];
+      entries[currentUser].push({ text, time: new Date().toLocaleString() });
+      localStorage.setItem('entries', JSON.stringify(entries));
+      document.getElementById('entry').value = '';
+      loadEntries();
     }
 
-    // Tải lại nội dung nếu có
-    window.onload = () => {
-      const saved = localStorage.getItem('loveNote');
-      if (saved) document.getElementById('textArea').value = saved;
+    function loadEntries() {
+      const list = document.getElementById('entries');
+      list.innerHTML = '';
+      (entries[currentUser] || []).slice().reverse().forEach(e => {
+        const div = document.createElement('div');
+        div.className = 'note';
+        div.innerHTML = `<strong>${e.time}</strong><br>${e.text}`;
+        list.appendChild(div);
+      });
     }
-  </script></body>
+  </script>
+</body>
 </html>
